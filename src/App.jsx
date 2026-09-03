@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Bell,
   Box,
@@ -7,11 +7,152 @@ import {
   Lock,
   Unlock,
   ChevronRight,
+  X,
+  QrCode,
 } from "lucide-react";
 
 function App() {
   const [activeTab, setActiveTab] = useState("Overview");
   const [isLocked, setIsLocked] = useState(true);
+  const [isScanOpen, setIsScanOpen] = useState(false);
+  const [scanCode, setScanCode] = useState("");
+  const [scanMessage, setScanMessage] = useState("");
+  const streamRef = useRef(null);
+  const videoRef = useRef(null);
+
+  const stopScanner = () => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((track) => track.stop());
+      streamRef.current = null;
+    }
+    if (videoRef.current) {
+      videoRef.current.srcObject = null;
+    }
+  };
+
+  const closeScanner = () => {
+    stopScanner();
+    setIsScanOpen(false);
+    setScanMessage("");
+  };
+
+  const processScan = (value) => {
+    const code = value.trim();
+    if (!code) {
+      setScanMessage("Please enter or scan a delivery code.");
+      return;
+    }
+
+    setScanCode(code);
+    setScanMessage(`Code scanned: ${code}`);
+    stopScanner();
+
+    // Demo behavior: a successful scan unlocks Dropora.
+    setIsLocked(false);
+  };
+
+  const startScanner = async () => {
+  setScanMessage("Starting camera...");
+
+  try {
+    stopScanner();
+
+    // Check if the browser supports camera access
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      setScanMessage("Camera access is not supported by this browser.");
+      return;
+    }
+
+    // Request the device camera
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: {
+        facingMode: { ideal: "environment" },
+        width: { ideal: 1280 },
+        height: { ideal: 720 },
+      },
+      audio: false,
+    });
+
+    streamRef.current = stream;
+
+    // Make sure the video element exists
+    if (!videoRef.current) {
+      stream.getTracks().forEach((track) => track.stop());
+      streamRef.current = null;
+      return;
+    }
+
+    // Put camera stream into the video element
+    videoRef.current.srcObject = stream;
+
+    // Start displaying the camera
+    await videoRef.current.play();
+
+    setScanMessage("Camera is ready. Point it at a QR code.");
+
+    // QR scanner
+    if ("BarcodeDetector" in window) {
+      const detector = new BarcodeDetector({
+        formats: ["qr_code"],
+      });
+
+      const scanFrame = async () => {
+        if (!streamRef.current || !videoRef.current) {
+          return;
+        }
+
+        try {
+          const barcodes = await detector.detect(videoRef.current);
+
+          if (barcodes.length > 0 && barcodes[0].rawValue) {
+            processScan(barcodes[0].rawValue);
+            return;
+          }
+        } catch (error) {
+          console.error("QR detection error:", error);
+        }
+
+        requestAnimationFrame(scanFrame);
+      };
+
+      requestAnimationFrame(scanFrame);
+    } else {
+      setScanMessage(
+        "Camera is working, but QR scanning is not supported in this browser. You can enter the code manually."
+      );
+    }
+  } catch (error) {
+    console.error("Camera error:", error);
+
+    if (error.name === "NotAllowedError") {
+      setScanMessage(
+        "Camera permission was denied. Please allow camera access."
+      );
+    } else if (error.name === "NotFoundError") {
+      setScanMessage("No camera was found on this device.");
+    } else {
+      setScanMessage(
+        "Unable to access the camera. Please allow camera permission and try again."
+      );
+    }
+
+    stopScanner();
+  }
+};
+       
+
+  useEffect(() => {
+    if (!isScanOpen) return;
+
+    const timer = setTimeout(() => {
+      startScanner();
+    }, 150);
+
+    return () => {
+      clearTimeout(timer);
+      stopScanner();
+    };
+  }, [isScanOpen]);
 
   return (
     <div className="min-h-screen overflow-x-hidden bg-[#11162b] px-5 py-8 text-white md:px-10 lg:px-12">
@@ -109,6 +250,10 @@ function App() {
 
         {/* Scan Delivery */}
         <button
+          onClick={() => {
+            setIsScanOpen(true);
+            setScanMessage("");
+          }}
           className="
             flex
             min-h-[110px]
@@ -404,9 +549,6 @@ function App() {
 
             </button>
 
-
-        
-
           </div>
 
         </section>
@@ -636,6 +778,83 @@ function App() {
         </section>
 
       </main>
+
+      {/* ================= QR SCANNER ================= */}
+      {isScanOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-5 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-[28px] border border-[#293352] bg-[#171d33] p-6 shadow-2xl">
+            <div className="mb-5 flex items-center justify-between">
+              <div>
+                <p className="text-[11px] tracking-[0.22em] text-[#5f7199]">DROPORA</p>
+                <h2 className="mt-1 text-xl font-medium">Scan Delivery Code</h2>
+              </div>
+
+              <button
+                onClick={closeScanner}
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-[#222a44] text-[#8090b5] transition hover:text-white"
+                aria-label="Close scanner"
+              >
+                <X size={19} />
+              </button>
+            </div>
+
+            <div className="relative overflow-hidden rounded-[22px] border border-[#2b3656] bg-black">
+              <video
+                ref={videoRef}
+                className="aspect-square w-full object-cover"
+                muted
+                playsInline
+              />
+
+              <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                <div className="h-52 w-52 rounded-[22px] border-2 border-[#5b9af4] shadow-[0_0_35px_rgba(91,154,244,0.35)]" />
+              </div>
+
+              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full bg-black/65 px-4 py-2 text-xs text-white/80">
+                Point the camera at a QR code
+              </div>
+            </div>
+
+            {scanMessage && (
+              <div className="mt-4 rounded-[14px] bg-[#202943] px-4 py-3 text-sm text-[#b9c7e8]">
+                {scanMessage}
+              </div>
+            )}
+
+            {scanCode && (
+              <div className="mt-4 rounded-[14px] bg-[#183b31] px-4 py-3 text-sm text-[#42df88]">
+                Delivery code: <span className="font-medium">{scanCode}</span>
+              </div>
+            )}
+
+            <div className="my-5 flex items-center gap-3 text-xs text-[#566789]">
+              <span className="h-px flex-1 bg-[#293352]" />
+              OR ENTER CODE MANUALLY
+              <span className="h-px flex-1 bg-[#293352]" />
+            </div>
+
+            <div className="flex gap-3">
+              <input
+                value={scanCode}
+                onChange={(e) => setScanCode(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") processScan(scanCode);
+                }}
+                placeholder="e.g. PKG-4821"
+                className="min-w-0 flex-1 rounded-[14px] border border-[#293352] bg-[#1d2540] px-4 py-3 text-sm text-white outline-none placeholder:text-[#596a8e] focus:border-[#5b9af4]"
+              />
+
+              <button
+                onClick={() => processScan(scanCode)}
+                className="flex items-center gap-2 rounded-[14px] bg-[#5799ff] px-5 py-3 text-sm font-medium text-white transition hover:bg-[#6aa6ff]"
+              >
+                <QrCode size={17} />
+                Scan
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );
