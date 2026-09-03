@@ -5,34 +5,13 @@ import {
   ScanLine,
   Wifi,
   Lock,
+  Unlock,
   ChevronRight,
 } from "lucide-react";
 
-const compartments = [
-  {
-    id: "A1",
-    status: "Secured",
-    type: "secured",
-  },
-  {
-    id: "A2",
-    status: "Receiving",
-    type: "receiving",
-  },
-  {
-    id: "B1",
-    status: "Available",
-    type: "available",
-  },
-  {
-    id: "B2",
-    status: "Available",
-    type: "available",
-  },
-];
-
 function App() {
   const [activeTab, setActiveTab] = useState("Overview");
+  const [isLocked, setIsLocked] = useState(true);
 
   return (
     <div className="min-h-screen overflow-x-hidden bg-[#11162b] px-5 py-8 text-white md:px-10 lg:px-12">
@@ -51,7 +30,7 @@ function App() {
           </h1>
 
           <p className="mt-2 text-[15px] text-[#7282aa]">
-            2 packages awaiting · 1 ready to collect
+            1 package awaiting · 1 ready to collect
           </p>
         </div>
 
@@ -98,18 +77,20 @@ function App() {
           "
         >
 
-          <div className="
-            mr-5
-            flex
-            h-[59px]
-            w-[59px]
-            shrink-0
-            items-center
-            justify-center
-            rounded-[19px]
-            bg-white/15
-            shadow-inner
-          ">
+          <div
+            className="
+              mr-5
+              flex
+              h-[59px]
+              w-[59px]
+              shrink-0
+              items-center
+              justify-center
+              rounded-[19px]
+              bg-white/15
+              shadow-inner
+            "
+          >
             <Box size={28} strokeWidth={1.8} />
           </div>
 
@@ -119,7 +100,7 @@ function App() {
             </p>
 
             <p className="mt-1 text-[14px] text-[#d8e7ff]">
-              Open available compartment
+              Open Dropora compartment
             </p>
           </div>
 
@@ -145,18 +126,20 @@ function App() {
           "
         >
 
-          <div className="
-            mr-5
-            flex
-            h-[59px]
-            w-[59px]
-            shrink-0
-            items-center
-            justify-center
-            rounded-[19px]
-            bg-[#202d4d]
-            text-[#5c9cff]
-          ">
+          <div
+            className="
+              mr-5
+              flex
+              h-[59px]
+              w-[59px]
+              shrink-0
+              items-center
+              justify-center
+              rounded-[19px]
+              bg-[#202d4d]
+              text-[#5c9cff]
+            "
+          >
             <ScanLine size={28} strokeWidth={1.7} />
           </div>
 
@@ -178,8 +161,7 @@ function App() {
       {/* ================= MAIN DASHBOARD ================= */}
       <main className="mt-7 grid gap-7 lg:grid-cols-[478px_minmax(0,1fr)]">
 
-
-        {/* ================= PARCEL VAULT ================= */}
+        {/* ================= DROPORA LOCKER ================= */}
         <section
           className="
             rounded-[27px]
@@ -193,22 +175,24 @@ function App() {
           "
         >
 
-          {/* Vault Header */}
+          {/* Locker Header */}
           <div className="mb-4 flex items-center justify-between">
 
             <p className="text-[15px] font-medium tracking-wide text-[#687aa5]">
-              PARCELVAULT PRO
+              DROPORA
             </p>
 
             <div className="flex items-center gap-2 text-[14px] text-[#38d983]">
 
-              <span className="
-                h-[10px]
-                w-[10px]
-                rounded-full
-                bg-[#3bd985]
-                shadow-[0_0_12px_rgba(59,217,133,0.7)]
-              " />
+              <span
+                className="
+                  h-[10px]
+                  w-[10px]
+                  rounded-full
+                  bg-[#3bd985]
+                  shadow-[0_0_12px_rgba(59,217,133,0.7)]
+                "
+              />
 
               Connected
             </div>
@@ -243,7 +227,7 @@ function App() {
             >
 
               <span className="text-[13px] tracking-[0.2em] text-[#536487]">
-                PARCELVAULT
+                DROPORA LOCKER
               </span>
 
               <span
@@ -259,129 +243,181 @@ function App() {
             </div>
 
 
-            {/* Compartments */}
-            <div className="grid grid-cols-2 gap-4">
+            {/* ================= SINGLE COMPARTMENT ================= */}
+            <div
+              className={`
+                relative
+                flex
+                h-[180px]
+                flex-col
+                justify-between
+                overflow-hidden
+                rounded-[24px]
+                p-6
+                ${
+                  isLocked
+                    ? "bg-[#202743]"
+                    : "bg-[#1d2944]"
+                }
+              `}
+            >
 
-              {compartments.map((item) => (
+              {/* Subtle diagonal pattern */}
+              <div
+                className="
+                  pointer-events-none
+                  absolute
+                  inset-0
+                  opacity-[0.08]
+                  [background:repeating-linear-gradient(55deg,transparent,transparent_13px,#7b8eb8_14px,#7b8eb8_15px)]
+                "
+              />
+
+
+              {/* Top */}
+              <div className="relative flex items-center justify-between">
+
+                <span className="text-[14px] tracking-[0.15em] text-[#687898]">
+                  DROPORA
+                </span>
+
+                {isLocked ? (
+                  <Lock
+                    size={25}
+                    className="text-[#35d985]"
+                    strokeWidth={1.6}
+                  />
+                ) : (
+                  <Unlock
+                    size={25}
+                    className="text-[#5b9af4]"
+                    strokeWidth={1.6}
+                  />
+                )}
+
+              </div>
+
+
+              {/* Center */}
+              <div className="relative flex flex-col items-center justify-center">
 
                 <div
-                  key={item.id}
                   className={`
-                    relative
+                    mb-3
                     flex
-                    h-[100px]
-                    flex-col
-                    justify-between
-                    overflow-hidden
-                    rounded-[20px]
-                    p-4
-
+                    h-[54px]
+                    w-[54px]
+                    items-center
+                    justify-center
+                    rounded-full
                     ${
-                      item.type === "secured" ||
-                      item.type === "receiving"
-                        ? "bg-[#202743]"
-                        : "bg-[#1e253e]"
+                      isLocked
+                        ? "bg-[#26c978]/15 text-[#35d985]"
+                        : "bg-[#3d86ee]/15 text-[#5b9af4]"
                     }
                   `}
                 >
-
-                  {/* Subtle diagonal pattern */}
-                  {(item.type === "secured" ||
-                    item.type === "receiving") && (
-                    <div className="
-                      pointer-events-none
-                      absolute
-                      inset-0
-                      opacity-[0.08]
-                      [background:repeating-linear-gradient(55deg,transparent,transparent_13px,#7b8eb8_14px,#7b8eb8_15px)]
-                    " />
+                  {isLocked ? (
+                    <Lock size={25} />
+                  ) : (
+                    <Unlock size={25} />
                   )}
-
-
-                  {/* Top */}
-                  <div className="relative flex items-center justify-between">
-
-                    <span className="text-[13px] text-[#687898]">
-                      {item.id}
-                    </span>
-
-                    {item.type === "secured" && (
-                      <Lock
-                        size={17}
-                        className="text-[#35d985]"
-                        strokeWidth={1.6}
-                      />
-                    )}
-
-                    {item.type === "receiving" && (
-                      <Box
-                        size={17}
-                        className="text-[#4d91ef]"
-                        strokeWidth={1.6}
-                      />
-                    )}
-
-                  </div>
-
-
-                  {/* Bottom */}
-                  <div className="relative flex items-center justify-between">
-
-                    <span
-                      className={`
-                        rounded-full
-                        px-3
-                        py-1
-                        text-[11px]
-
-                        ${
-                          item.type === "secured"
-                            ? "bg-[#26c978]/15 text-[#35d985]"
-                            : item.type === "receiving"
-                            ? "bg-[#3d86ee]/15 text-[#5b9af4]"
-                            : "bg-[#6c7690]/15 text-[#737f9c]"
-                        }
-                      `}
-                    >
-                      {item.status}
-                    </span>
-
-                    <span
-                      className={`
-                        h-[13px]
-                        w-[13px]
-                        rounded-full
-
-                        ${
-                          item.type === "secured"
-                            ? "bg-[#42dd85] shadow-[0_0_14px_rgba(66,221,133,0.7)]"
-                            : item.type === "receiving"
-                            ? "bg-[#5599f2] shadow-[0_0_14px_rgba(85,153,242,0.6)]"
-                            : "bg-[#69748a]"
-                        }
-                      `}
-                    />
-
-                  </div>
-
                 </div>
 
-              ))}
+                <span
+                  className={`
+                    rounded-full
+                    px-4
+                    py-1.5
+                    text-[12px]
+                    ${
+                      isLocked
+                        ? "bg-[#26c978]/15 text-[#35d985]"
+                        : "bg-[#3d86ee]/15 text-[#5b9af4]"
+                    }
+                  `}
+                >
+                  {isLocked ? "Locked" : "Unlocked"}
+                </span>
+
+              </div>
+
+
+              {/* Bottom */}
+              <div className="relative flex items-center justify-between">
+
+                <span className="text-[12px] text-[#687898]">
+                  Main Compartment
+                </span>
+
+                <span
+                  className={`
+                    h-[13px]
+                    w-[13px]
+                    rounded-full
+                    ${
+                      isLocked
+                        ? "bg-[#42dd85] shadow-[0_0_14px_rgba(66,221,133,0.7)]"
+                        : "bg-[#5599f2] shadow-[0_0_14px_rgba(85,153,242,0.6)]"
+                    }
+                  `}
+                />
+
+              </div>
 
             </div>
 
 
+            {/* Lock / Unlock Button */}
+            <button
+              onClick={() => setIsLocked(!isLocked)}
+              className={`
+                mt-5
+                flex
+                h-[48px]
+                w-full
+                items-center
+                justify-center
+                gap-2
+                rounded-[14px]
+                text-[14px]
+                transition
+                ${
+                  isLocked
+                    ? "bg-[#24304e] text-[#5a9aff] hover:bg-[#29385c]"
+                    : "bg-[#183b31] text-[#3fe18a] hover:bg-[#1d4a3d]"
+                }
+              `}
+            >
+
+              {isLocked ? (
+                <>
+                  <Unlock size={18} />
+                  Unlock Dropora
+                </>
+              ) : (
+                <>
+                  <Lock size={18} />
+                  Lock Dropora
+                </>
+              )}
+
+            </button>
+
+
             {/* Locker Bottom */}
-            <div className="
-              mt-5
-              flex
-              h-[40px]
-              items-center
-              justify-center
-              gap-4
-              rounded-[15px]
-              bg-[#171d34]
-            ">
+            <div
+              className="
+                mt-5
+                flex
+                h-[40px]
+                items-center
+                justify-center
+                gap-4
+                rounded-[15px]
+                bg-[#171d34]
+              "
+            >
 
               {[1, 2, 3, 4, 5].map((item) => (
                 <span
@@ -399,7 +435,6 @@ function App() {
 
         {/* ================= RIGHT CONTENT ================= */}
         <section className="min-w-0">
-
 
           {/* TABS */}
           <div
@@ -425,7 +460,6 @@ function App() {
                   py-3
                   text-[14px]
                   transition
-
                   ${
                     activeTab === item
                       ? "bg-[#202640] text-[#5c9cff] shadow-lg"
@@ -471,7 +505,7 @@ function App() {
               <div className="mt-5 grid grid-cols-3 gap-4">
 
                 <StatCard
-                  value="2"
+                  value="1"
                   label="Received"
                   valueColor="text-[#5799ff]"
                 />
@@ -483,15 +517,19 @@ function App() {
                 />
 
                 <StatCard
-                  value="2/4"
-                  label="Bays Free"
-                  valueColor="text-[#ff8b32]"
+                  value={isLocked ? "Locked" : "Open"}
+                  label="Locker Status"
+                  valueColor={
+                    isLocked
+                      ? "text-[#3fdf86]"
+                      : "text-[#5799ff]"
+                  }
                 />
 
               </div>
 
 
-              {/* SECURED COMPARTMENT */}
+              {/* DROPORA STATUS */}
               <div
                 className="
                   mt-5
@@ -510,20 +548,30 @@ function App() {
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
 
                   <h2 className="text-[17px] font-medium text-[#dce5ff]">
-                    Secured Compartment
+                    Dropora Compartment
                   </h2>
 
-                  <div className="flex items-center gap-2 text-[14px] text-[#40df87]">
+                  <div
+                    className={`
+                      flex
+                      items-center
+                      gap-2
+                      text-[14px]
+                      ${
+                        isLocked
+                          ? "text-[#40df87]"
+                          : "text-[#5b9af4]"
+                      }
+                    `}
+                  >
 
-                    <span className="
-                      h-[13px]
-                      w-[13px]
-                      rounded-full
-                      bg-[#3fe18a]
-                      shadow-[0_0_12px_rgba(63,225,138,0.7)]
-                    " />
+                    {isLocked ? (
+                      <Lock size={16} />
+                    ) : (
+                      <Unlock size={16} />
+                    )}
 
-                    A1 · Locked
+                    {isLocked ? "Locked" : "Unlocked"}
 
                   </div>
 
@@ -592,7 +640,7 @@ function App() {
             <EmptyState
               icon={<Box size={42} />}
               title="Your Packages"
-              description="2 packages are currently registered."
+              description="1 package is currently registered in Dropora."
             />
           )}
 
@@ -634,7 +682,7 @@ function StatCard({ value, label, valueColor }) {
       "
     >
 
-      <span className={`text-[30px] font-normal ${valueColor}`}>
+      <span className={`text-[25px] font-normal ${valueColor}`}>
         {value}
       </span>
 
