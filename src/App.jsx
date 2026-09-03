@@ -405,28 +405,7 @@ function App() {
             </button>
 
 
-            {/* Locker Bottom */}
-            <div
-              className="
-                mt-5
-                flex
-                h-[40px]
-                items-center
-                justify-center
-                gap-4
-                rounded-[15px]
-                bg-[#171d34]
-              "
-            >
-
-              {[1, 2, 3, 4, 5].map((item) => (
-                <span
-                  key={item}
-                  className="h-[5px] w-[5px] rounded-full bg-[#556486]"
-                />
-              ))}
-
-            </div>
+        
 
           </div>
 
