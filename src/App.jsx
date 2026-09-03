@@ -6,9 +6,10 @@ import {
   Wifi,
   Lock,
   Unlock,
-  ChevronRight,
   X,
   QrCode,
+  Sun,
+  Moon,
 } from "lucide-react";
 
 function App() {
@@ -17,14 +18,23 @@ function App() {
   const [isScanOpen, setIsScanOpen] = useState(false);
   const [scanCode, setScanCode] = useState("");
   const [scanMessage, setScanMessage] = useState("");
+
+  // ================= THEME =================
+  const [theme, setTheme] = useState("dark");
+
   const streamRef = useRef(null);
   const videoRef = useRef(null);
+
+  const isDark = theme === "dark";
+
+  // ================= SCANNER =================
 
   const stopScanner = () => {
     if (streamRef.current) {
       streamRef.current.getTracks().forEach((track) => track.stop());
       streamRef.current = null;
     }
+
     if (videoRef.current) {
       videoRef.current.srcObject = null;
     }
@@ -38,6 +48,7 @@ function App() {
 
   const processScan = (value) => {
     const code = value.trim();
+
     if (!code) {
       setScanMessage("Please enter or scan a delivery code.");
       return;
@@ -45,101 +56,109 @@ function App() {
 
     setScanCode(code);
     setScanMessage(`Code scanned: ${code}`);
+
     stopScanner();
 
-    // Demo behavior: a successful scan unlocks Dropora.
+    // Successful scan unlocks Dropora
     setIsLocked(false);
   };
 
   const startScanner = async () => {
-  setScanMessage("Starting camera...");
+    setScanMessage("Starting camera...");
 
-  try {
-    stopScanner();
+    try {
+      stopScanner();
 
-    // Check if the browser supports camera access
-    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-      setScanMessage("Camera access is not supported by this browser.");
-      return;
-    }
+      if (
+        !navigator.mediaDevices ||
+        !navigator.mediaDevices.getUserMedia
+      ) {
+        setScanMessage(
+          "Camera access is not supported by this browser."
+        );
+        return;
+      }
 
-    // Request the device camera
-    const stream = await navigator.mediaDevices.getUserMedia({
-      video: {
-        facingMode: { ideal: "environment" },
-        width: { ideal: 1280 },
-        height: { ideal: 720 },
-      },
-      audio: false,
-    });
+      const stream =
+        await navigator.mediaDevices.getUserMedia({
+          video: {
+            facingMode: { ideal: "environment" },
+            width: { ideal: 1280 },
+            height: { ideal: 720 },
+          },
+          audio: false,
+        });
 
-    streamRef.current = stream;
+      streamRef.current = stream;
 
-    // Make sure the video element exists
-    if (!videoRef.current) {
-      stream.getTracks().forEach((track) => track.stop());
-      streamRef.current = null;
-      return;
-    }
+      if (!videoRef.current) {
+        stream.getTracks().forEach((track) => track.stop());
+        streamRef.current = null;
+        return;
+      }
 
-    // Put camera stream into the video element
-    videoRef.current.srcObject = stream;
+      videoRef.current.srcObject = stream;
 
-    // Start displaying the camera
-    await videoRef.current.play();
+      await videoRef.current.play();
 
-    setScanMessage("Camera is ready. Point it at a QR code.");
+      setScanMessage(
+        "Camera is ready. Point it at a QR code."
+      );
 
-    // QR scanner
-    if ("BarcodeDetector" in window) {
-      const detector = new BarcodeDetector({
-        formats: ["qr_code"],
-      });
+      if ("BarcodeDetector" in window) {
+        const detector = new BarcodeDetector({
+          formats: ["qr_code"],
+        });
 
-      const scanFrame = async () => {
-        if (!streamRef.current || !videoRef.current) {
-          return;
-        }
-
-        try {
-          const barcodes = await detector.detect(videoRef.current);
-
-          if (barcodes.length > 0 && barcodes[0].rawValue) {
-            processScan(barcodes[0].rawValue);
+        const scanFrame = async () => {
+          if (!streamRef.current || !videoRef.current) {
             return;
           }
-        } catch (error) {
-          console.error("QR detection error:", error);
-        }
+
+          try {
+            const barcodes =
+              await detector.detect(videoRef.current);
+
+            if (
+              barcodes.length > 0 &&
+              barcodes[0].rawValue
+            ) {
+              processScan(barcodes[0].rawValue);
+              return;
+            }
+          } catch (error) {
+            console.error("QR detection error:", error);
+          }
+
+          requestAnimationFrame(scanFrame);
+        };
 
         requestAnimationFrame(scanFrame);
-      };
+      } else {
+        setScanMessage(
+          "Camera is working, but QR scanning is not supported in this browser. You can enter the code manually."
+        );
+      }
+    } catch (error) {
+      console.error("Camera error:", error);
 
-      requestAnimationFrame(scanFrame);
-    } else {
-      setScanMessage(
-        "Camera is working, but QR scanning is not supported in this browser. You can enter the code manually."
-      );
+      if (error.name === "NotAllowedError") {
+        setScanMessage(
+          "Camera permission was denied. Please allow camera access."
+        );
+      } else if (error.name === "NotFoundError") {
+        setScanMessage(
+          "No camera was found on this device."
+        );
+      } else {
+        setScanMessage(
+          "Unable to access the camera. Please allow camera permission and try again."
+        );
+      }
+
+      stopScanner();
     }
-  } catch (error) {
-    console.error("Camera error:", error);
-
-    if (error.name === "NotAllowedError") {
-      setScanMessage(
-        "Camera permission was denied. Please allow camera access."
-      );
-    } else if (error.name === "NotFoundError") {
-      setScanMessage("No camera was found on this device.");
-    } else {
-      setScanMessage(
-        "Unable to access the camera. Please allow camera permission and try again."
-      );
-    }
-
-    stopScanner();
-  }
-};
-       
+  };
 
   useEffect(() => {
     if (!isScanOpen) return;
@@ -154,51 +173,134 @@ function App() {
     };
   }, [isScanOpen]);
 
+  // ================= COLORS =================
+
+  const colors = {
+    page: isDark
+      ? "bg-[#11162b] text-white"
+      : "bg-[#f4f7fc] text-[#182238]",
+
+    muted: isDark
+      ? "text-[#7282aa]"
+      : "text-[#687797]",
+
+    card: isDark
+      ? "bg-[#1b2139]"
+      : "bg-white",
+
+    cardBorder: isDark
+      ? "border-[#252d4b]"
+      : "border-[#dce3ef]",
+
+    secondaryCard: isDark
+      ? "bg-[#202640]"
+      : "bg-[#f8faff]",
+
+    input: isDark
+      ? "bg-[#1d2540] border-[#293352]"
+      : "bg-[#f1f5fb] border-[#d8e0ed]",
+
+    title: isDark
+      ? "text-[#dce5ff]"
+      : "text-[#1c2942]",
+
+    smallText: isDark
+      ? "text-[#687898]"
+      : "text-[#71809c]",
+  };
+
   return (
-    <div className="min-h-screen overflow-x-hidden bg-[#11162b] px-5 py-8 text-white md:px-10 lg:px-12">
+    <div
+      className={`min-h-screen overflow-x-hidden px-5 py-8 transition-colors duration-300 md:px-10 lg:px-12 ${colors.page}`}
+    >
 
       {/* ================= HEADER ================= */}
+
       <header className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
 
         <div>
-          <p className="text-[12px] font-medium tracking-[0.28em] text-[#53658f]">
+          <p
+            className={`text-[12px] font-medium tracking-[0.28em] ${isDark ? "text-[#53658f]" : "text-[#72809a]"}`}
+          >
             WEDNESDAY, SEPTEMBER 2
           </p>
 
           <h1 className="mt-2 text-[34px] font-normal leading-tight tracking-[-1px] md:text-[38px]">
             Welcome back,{" "}
-            <span className="text-[#5797ff]">Morgan</span>
+            <span className="text-[#5797ff]">
+              Morgan
+            </span>
           </h1>
 
-          <p className="mt-2 text-[15px] text-[#7282aa]">
+          <p className={`mt-2 text-[15px] ${colors.muted}`}>
             1 package awaiting · 1 ready to collect
           </p>
         </div>
 
         {/* Header Controls */}
-        <div className="flex items-center gap-4">
 
-          <div className="flex items-center gap-2 rounded-full bg-[#1a2139] px-5 py-2.5 text-[14px] text-[#3ee18a] shadow-lg shadow-black/10">
+        <div className="flex items-center gap-3">
+
+          {/* Online */}
+
+          <div
+            className={`flex items-center gap-2 rounded-full px-5 py-2.5 text-[14px] shadow-lg transition-colors ${
+              isDark
+                ? "bg-[#1a2139] text-[#3ee18a]"
+                : "bg-white text-[#22a968] border border-[#dce3ef]"
+            }`}
+          >
             <Wifi size={16} />
             <span>Online</span>
           </div>
 
+          {/* Theme Button */}
+
           <button
-            className="relative flex h-14 w-14 items-center justify-center rounded-full bg-[#1a2139] text-[#7b88a9] shadow-lg shadow-black/20 transition hover:text-white"
+            onClick={() =>
+              setTheme(isDark ? "light" : "dark")
+            }
+            className={`flex h-12 w-12 items-center justify-center rounded-full transition-all duration-300 ${
+              isDark
+                ? "bg-[#1a2139] text-[#f7c75d] hover:bg-[#242d49]"
+                : "bg-white text-[#52627f] border border-[#dce3ef] hover:bg-[#edf2fa]"
+            }`}
+            title={
+              isDark
+                ? "Switch to Light Mode"
+                : "Switch to Dark Mode"
+            }
+          >
+            {isDark ? (
+              <Sun size={20} />
+            ) : (
+              <Moon size={20} />
+            )}
+          </button>
+
+          {/* Notification */}
+
+          <button
+            className={`relative flex h-12 w-12 items-center justify-center rounded-full transition ${
+              isDark
+                ? "bg-[#1a2139] text-[#7b88a9] hover:text-white"
+                : "bg-white text-[#687797] border border-[#dce3ef] hover:text-[#182238]"
+            }`}
           >
             <Bell size={21} />
 
-            <span className="absolute right-[10px] top-[8px] h-[9px] w-[9px] rounded-full bg-[#f18b35]" />
+            <span className="absolute right-[8px] top-[7px] h-[9px] w-[9px] rounded-full bg-[#f18b35]" />
           </button>
 
         </div>
       </header>
 
-
       {/* ================= ACTION CARDS ================= */}
+
       <section className="mt-8 grid gap-5 lg:grid-cols-2">
 
         {/* Receive Package */}
+
         <button
           className="
             group
@@ -247,28 +349,14 @@ function App() {
 
         </button>
 
-
         {/* Scan Delivery */}
+
         <button
           onClick={() => {
             setIsScanOpen(true);
             setScanMessage("");
           }}
-          className="
-            flex
-            min-h-[110px]
-            items-center
-            rounded-[28px]
-            border
-            border-[#252d4b]
-            bg-[#1a2037]
-            px-7
-            text-left
-            shadow-[0_15px_35px_rgba(0,0,0,0.12)]
-            transition
-            duration-200
-            hover:-translate-y-1
-          "
+          className={`flex min-h-[110px] items-center rounded-[28px] border px-7 text-left shadow-[0_15px_35px_rgba(0,0,0,0.08)] transition duration-200 hover:-translate-y-1 ${colors.cardBorder} ${colors.card}`}
         >
 
           <div
@@ -289,11 +377,13 @@ function App() {
           </div>
 
           <div>
-            <p className="text-[19px] font-medium">
+            <p
+              className={`text-[19px] font-medium ${colors.title}`}
+            >
               Scan Delivery Code
             </p>
 
-            <p className="mt-1 text-[14px] text-[#7181a9]">
+            <p className={`mt-1 text-[14px] ${colors.muted}`}>
               QR or manual entry
             </p>
           </div>
@@ -302,112 +392,85 @@ function App() {
 
       </section>
 
-
       {/* ================= MAIN DASHBOARD ================= */}
+
       <main className="mt-7 grid gap-7 lg:grid-cols-[478px_minmax(0,1fr)]">
 
         {/* ================= DROPORA LOCKER ================= */}
+
         <section
-          className="
-            rounded-[27px]
-            border
-            border-[#202945]
-            bg-gradient-to-br
-            from-[#202640]
-            to-[#171d33]
-            p-7
-            shadow-[0_20px_45px_rgba(0,0,0,0.15)]
-          "
+          className={`rounded-[27px] border p-7 shadow-[0_20px_45px_rgba(0,0,0,0.12)] transition-colors duration-300 ${
+            isDark
+              ? "border-[#202945] bg-gradient-to-br from-[#202640] to-[#171d33]"
+              : "border-[#dce3ef] bg-gradient-to-br from-white to-[#f3f6fc]"
+          }`}
         >
 
           {/* Locker Header */}
+
           <div className="mb-4 flex items-center justify-between">
 
-            <p className="text-[15px] font-medium tracking-wide text-[#687aa5]">
+            <p
+              className={`text-[15px] font-medium tracking-wide ${colors.smallText}`}
+            >
               DROPORA
             </p>
 
             <div className="flex items-center gap-2 text-[14px] text-[#38d983]">
 
-              <span
-                className="
-                  h-[10px]
-                  w-[10px]
-                  rounded-full
-                  bg-[#3bd985]
-                  shadow-[0_0_12px_rgba(59,217,133,0.7)]
-                "
-              />
+              <span className="h-[10px] w-[10px] rounded-full bg-[#3bd985] shadow-[0_0_12px_rgba(59,217,133,0.7)]" />
 
               Connected
             </div>
 
           </div>
 
-
           {/* Locker Device */}
+
           <div
-            className="
-              rounded-[25px]
-              border
-              border-[#27304c]
-              bg-[#1b223b]
-              p-6
-              shadow-inner
-            "
+            className={`rounded-[25px] border p-6 shadow-inner ${
+              isDark
+                ? "border-[#27304c] bg-[#1b223b]"
+                : "border-[#dce3ef] bg-[#f7f9fd]"
+            }`}
           >
 
             {/* Device Name */}
+
             <div
-              className="
-                mb-5
-                flex
-                h-[39px]
-                items-center
-                justify-between
-                rounded-[15px]
-                bg-[#171d34]
-                px-5
-              "
+              className={`mb-5 flex h-[39px] items-center justify-between rounded-[15px] px-5 ${
+                isDark
+                  ? "bg-[#171d34]"
+                  : "bg-[#eaf0f8]"
+              }`}
             >
 
-              <span className="text-[13px] tracking-[0.2em] text-[#536487]">
+              <span
+                className={`text-[13px] tracking-[0.2em] ${colors.smallText}`}
+              >
                 DROPORA LOCKER
               </span>
 
-              <span
-                className="
-                  h-[10px]
-                  w-[10px]
-                  rounded-full
-                  bg-[#3fe486]
-                  shadow-[0_0_12px_rgba(63,228,134,0.8)]
-                "
-              />
+              <span className="h-[10px] w-[10px] rounded-full bg-[#3fe486] shadow-[0_0_12px_rgba(63,228,134,0.8)]" />
 
             </div>
 
-
             {/* ================= SINGLE COMPARTMENT ================= */}
+
             <div
-              className={`
-                relative
-                flex
-                h-[180px]
-                flex-col
-                justify-between
-                overflow-hidden
-                rounded-[24px]
-                p-6
-                ${
-                  isLocked
+              className={`relative flex h-[180px] flex-col justify-between overflow-hidden rounded-[24px] p-6 ${
+                isLocked
+                  ? isDark
                     ? "bg-[#202743]"
-                    : "bg-[#1d2944]"
-                }
-              `}
+                    : "bg-[#eaf7f0]"
+                  : isDark
+                  ? "bg-[#1d2944]"
+                  : "bg-[#eaf2ff]"
+              }`}
             >
 
-              {/* Subtle diagonal pattern */}
+              {/* Pattern */}
+
               <div
                 className="
                   pointer-events-none
@@ -418,11 +481,11 @@ function App() {
                 "
               />
 
-
               {/* Top */}
+
               <div className="relative flex items-center justify-between">
 
-                <span className="text-[14px] tracking-[0.15em] text-[#687898]">
+                <span className={`text-[14px] tracking-[0.15em] ${colors.smallText}`}>
                   DROPORA
                 </span>
 
@@ -442,25 +505,16 @@ function App() {
 
               </div>
 
-
               {/* Center */}
+
               <div className="relative flex flex-col items-center justify-center">
 
                 <div
-                  className={`
-                    mb-3
-                    flex
-                    h-[54px]
-                    w-[54px]
-                    items-center
-                    justify-center
-                    rounded-full
-                    ${
-                      isLocked
-                        ? "bg-[#26c978]/15 text-[#35d985]"
-                        : "bg-[#3d86ee]/15 text-[#5b9af4]"
-                    }
-                  `}
+                  className={`mb-3 flex h-[54px] w-[54px] items-center justify-center rounded-full ${
+                    isLocked
+                      ? "bg-[#26c978]/15 text-[#35d985]"
+                      : "bg-[#3d86ee]/15 text-[#5b9af4]"
+                  }`}
                 >
                   {isLocked ? (
                     <Lock size={25} />
@@ -470,69 +524,46 @@ function App() {
                 </div>
 
                 <span
-                  className={`
-                    rounded-full
-                    px-4
-                    py-1.5
-                    text-[12px]
-                    ${
-                      isLocked
-                        ? "bg-[#26c978]/15 text-[#35d985]"
-                        : "bg-[#3d86ee]/15 text-[#5b9af4]"
-                    }
-                  `}
+                  className={`rounded-full px-4 py-1.5 text-[12px] ${
+                    isLocked
+                      ? "bg-[#26c978]/15 text-[#35d985]"
+                      : "bg-[#3d86ee]/15 text-[#5b9af4]"
+                  }`}
                 >
                   {isLocked ? "Locked" : "Unlocked"}
                 </span>
 
               </div>
 
-
               {/* Bottom */}
+
               <div className="relative flex items-center justify-between">
 
-                <span className="text-[12px] text-[#687898]">
+                <span className={`text-[12px] ${colors.smallText}`}>
                   Main Compartment
                 </span>
 
                 <span
-                  className={`
-                    h-[13px]
-                    w-[13px]
-                    rounded-full
-                    ${
-                      isLocked
-                        ? "bg-[#42dd85] shadow-[0_0_14px_rgba(66,221,133,0.7)]"
-                        : "bg-[#5599f2] shadow-[0_0_14px_rgba(85,153,242,0.6)]"
-                    }
-                  `}
+                  className={`h-[13px] w-[13px] rounded-full ${
+                    isLocked
+                      ? "bg-[#42dd85] shadow-[0_0_14px_rgba(66,221,133,0.7)]"
+                      : "bg-[#5599f2] shadow-[0_0_14px_rgba(85,153,242,0.6)]"
+                  }`}
                 />
 
               </div>
 
             </div>
 
-
             {/* Lock / Unlock Button */}
+
             <button
               onClick={() => setIsLocked(!isLocked)}
-              className={`
-                mt-5
-                flex
-                h-[48px]
-                w-full
-                items-center
-                justify-center
-                gap-2
-                rounded-[14px]
-                text-[14px]
-                transition
-                ${
-                  isLocked
-                    ? "bg-[#24304e] text-[#5a9aff] hover:bg-[#29385c]"
-                    : "bg-[#183b31] text-[#3fe18a] hover:bg-[#1d4a3d]"
-                }
-              `}
+              className={`mt-5 flex h-[48px] w-full items-center justify-center gap-2 rounded-[14px] text-[14px] transition ${
+                isLocked
+                  ? "bg-[#24304e] text-[#5a9aff] hover:bg-[#29385c]"
+                  : "bg-[#183b31] text-[#3fe18a] hover:bg-[#1d4a3d]"
+              }`}
             >
 
               {isLocked ? (
@@ -553,40 +584,36 @@ function App() {
 
         </section>
 
-
         {/* ================= RIGHT CONTENT ================= */}
+
         <section className="min-w-0">
 
           {/* TABS */}
+
           <div
-            className="
-              grid
-              grid-cols-3
-              rounded-[20px]
-              border
-              border-[#252d4b]
-              bg-[#1b2139]
-              p-1
-            "
+            className={`grid grid-cols-3 rounded-[20px] border p-1 ${
+              colors.cardBorder
+            } ${colors.card}`}
           >
 
-            {["Overview", "Packages", "Notifications"].map((item) => (
+            {[
+              "Overview",
+              "Packages",
+              "Notifications",
+            ].map((item) => (
 
               <button
                 key={item}
                 onClick={() => setActiveTab(item)}
-                className={`
-                  relative
-                  rounded-[16px]
-                  py-3
-                  text-[14px]
-                  transition
-                  ${
-                    activeTab === item
+                className={`relative rounded-[16px] py-3 text-[14px] transition ${
+                  activeTab === item
+                    ? isDark
                       ? "bg-[#202640] text-[#5c9cff] shadow-lg"
-                      : "text-[#53638b] hover:text-[#8290b4]"
-                  }
-                `}
+                      : "bg-[#edf3fc] text-[#4c8ef5] shadow-sm"
+                    : isDark
+                    ? "text-[#53638b] hover:text-[#8290b4]"
+                    : "text-[#74819a] hover:text-[#4d5c77]"
+                }`}
               >
 
                 {item}
@@ -617,24 +644,27 @@ function App() {
 
           </div>
 
-
           {/* ================= OVERVIEW ================= */}
+
           {activeTab === "Overview" && (
             <>
 
               {/* STAT CARDS */}
+
               <div className="mt-5 grid grid-cols-3 gap-4">
 
                 <StatCard
                   value="1"
                   label="Received"
                   valueColor="text-[#5799ff]"
+                  isDark={isDark}
                 />
 
                 <StatCard
                   value="1"
                   label="Collected"
                   valueColor="text-[#3fdf86]"
+                  isDark={isDark}
                 />
 
                 <StatCard
@@ -645,45 +675,37 @@ function App() {
                       ? "text-[#3fdf86]"
                       : "text-[#5799ff]"
                   }
+                  isDark={isDark}
                 />
 
               </div>
 
-
               {/* DROPORA STATUS */}
+
               <div
-                className="
-                  mt-5
-                  rounded-[24px]
-                  border
-                  border-[#222b48]
-                  bg-gradient-to-br
-                  from-[#202640]
-                  to-[#181e34]
-                  p-6
-                  shadow-[0_15px_35px_rgba(0,0,0,0.12)]
-                "
+                className={`mt-5 rounded-[24px] border p-6 shadow-[0_15px_35px_rgba(0,0,0,0.08)] ${
+                  isDark
+                    ? "border-[#222b48] bg-gradient-to-br from-[#202640] to-[#181e34]"
+                    : "border-[#dce3ef] bg-gradient-to-br from-white to-[#f4f7fc]"
+                }`}
               >
 
                 {/* Package Header */}
+
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
 
-                  <h2 className="text-[17px] font-medium text-[#dce5ff]">
+                  <h2
+                    className={`text-[17px] font-medium ${colors.title}`}
+                  >
                     Dropora Compartment
                   </h2>
 
                   <div
-                    className={`
-                      flex
-                      items-center
-                      gap-2
-                      text-[14px]
-                      ${
-                        isLocked
-                          ? "text-[#40df87]"
-                          : "text-[#5b9af4]"
-                      }
-                    `}
+                    className={`flex items-center gap-2 text-[14px] ${
+                      isLocked
+                        ? "text-[#40df87]"
+                        : "text-[#5b9af4]"
+                    }`}
                   >
 
                     {isLocked ? (
@@ -692,86 +714,68 @@ function App() {
                       <Unlock size={16} />
                     )}
 
-                    {isLocked ? "Locked" : "Unlocked"}
+                    {isLocked
+                      ? "Locked"
+                      : "Unlocked"}
 
                   </div>
 
                 </div>
 
-
                 {/* Package Information */}
+
                 <div className="mt-5 grid grid-cols-2 gap-4">
 
                   <InfoCard
                     title="PACKAGE ID"
                     value="PKG-4821"
+                    isDark={isDark}
                   />
 
                   <InfoCard
                     title="SENDER"
                     value="Apple Store"
+                    isDark={isDark}
                   />
 
                   <InfoCard
                     title="ARRIVED"
                     value="Today, 2:34 PM"
+                    isDark={isDark}
                   />
 
                   <InfoCard
                     title="WEIGHT"
                     value="1.2 kg"
+                    isDark={isDark}
                   />
 
                 </div>
-
-
-                {/* Details Button */}
-                <button
-                  className="
-                    mt-5
-                    flex
-                    h-[46px]
-                    w-full
-                    items-center
-                    justify-center
-                    gap-2
-                    rounded-[14px]
-                    bg-[#24304e]
-                    text-[14px]
-                    text-[#5a9aff]
-                    transition
-                    hover:bg-[#29385c]
-                  "
-                >
-
-                  View Package Details
-
-                  <ChevronRight size={18} />
-
-                </button>
 
               </div>
 
             </>
           )}
 
-
           {/* ================= PACKAGES ================= */}
+
           {activeTab === "Packages" && (
             <EmptyState
               icon={<Box size={42} />}
               title="Your Packages"
               description="1 package is currently registered in Dropora."
+              isDark={isDark}
             />
           )}
 
-
           {/* ================= NOTIFICATIONS ================= */}
+
           {activeTab === "Notifications" && (
             <EmptyState
               icon={<Bell size={42} />}
               title="Notifications"
               description="You have 2 unread notifications."
+              isDark={isDark}
             />
           )}
 
@@ -780,25 +784,50 @@ function App() {
       </main>
 
       {/* ================= QR SCANNER ================= */}
+
       {isScanOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-5 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-[28px] border border-[#293352] bg-[#171d33] p-6 shadow-2xl">
+
+          <div
+            className={`w-full max-w-md rounded-[28px] border p-6 shadow-2xl ${
+              isDark
+                ? "border-[#293352] bg-[#171d33]"
+                : "border-[#dce3ef] bg-white"
+            }`}
+          >
+
             <div className="mb-5 flex items-center justify-between">
+
               <div>
-                <p className="text-[11px] tracking-[0.22em] text-[#5f7199]">DROPORA</p>
-                <h2 className="mt-1 text-xl font-medium">Scan Delivery Code</h2>
+                <p className="text-[11px] tracking-[0.22em] text-[#5f7199]">
+                  DROPORA
+                </p>
+
+                <h2
+                  className={`mt-1 text-xl font-medium ${colors.title}`}
+                >
+                  Scan Delivery Code
+                </h2>
               </div>
 
               <button
                 onClick={closeScanner}
-                className="flex h-10 w-10 items-center justify-center rounded-full bg-[#222a44] text-[#8090b5] transition hover:text-white"
+                className={`flex h-10 w-10 items-center justify-center rounded-full transition ${
+                  isDark
+                    ? "bg-[#222a44] text-[#8090b5] hover:text-white"
+                    : "bg-[#edf2f8] text-[#687797] hover:text-[#182238]"
+                }`}
                 aria-label="Close scanner"
               >
                 <X size={19} />
               </button>
+
             </div>
 
+            {/* Camera */}
+
             <div className="relative overflow-hidden rounded-[22px] border border-[#2b3656] bg-black">
+
               <video
                 ref={videoRef}
                 className="aspect-square w-full object-cover"
@@ -813,46 +842,78 @@ function App() {
               <div className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full bg-black/65 px-4 py-2 text-xs text-white/80">
                 Point the camera at a QR code
               </div>
+
             </div>
 
+            {/* Scan Message */}
+
             {scanMessage && (
-              <div className="mt-4 rounded-[14px] bg-[#202943] px-4 py-3 text-sm text-[#b9c7e8]">
+              <div
+                className={`mt-4 rounded-[14px] px-4 py-3 text-sm ${
+                  isDark
+                    ? "bg-[#202943] text-[#b9c7e8]"
+                    : "bg-[#edf3fb] text-[#596982]"
+                }`}
+              >
                 {scanMessage}
               </div>
             )}
 
+            {/* Successful Code */}
+
             {scanCode && (
               <div className="mt-4 rounded-[14px] bg-[#183b31] px-4 py-3 text-sm text-[#42df88]">
-                Delivery code: <span className="font-medium">{scanCode}</span>
+                Delivery code:{" "}
+                <span className="font-medium">
+                  {scanCode}
+                </span>
               </div>
             )}
 
             <div className="my-5 flex items-center gap-3 text-xs text-[#566789]">
               <span className="h-px flex-1 bg-[#293352]" />
+
               OR ENTER CODE MANUALLY
+
               <span className="h-px flex-1 bg-[#293352]" />
             </div>
 
+            {/* Manual Input */}
+
             <div className="flex gap-3">
+
               <input
                 value={scanCode}
-                onChange={(e) => setScanCode(e.target.value)}
+                onChange={(e) =>
+                  setScanCode(e.target.value)
+                }
                 onKeyDown={(e) => {
-                  if (e.key === "Enter") processScan(scanCode);
+                  if (e.key === "Enter") {
+                    processScan(scanCode);
+                  }
                 }}
                 placeholder="e.g. PKG-4821"
-                className="min-w-0 flex-1 rounded-[14px] border border-[#293352] bg-[#1d2540] px-4 py-3 text-sm text-white outline-none placeholder:text-[#596a8e] focus:border-[#5b9af4]"
+                className={`min-w-0 flex-1 rounded-[14px] border px-4 py-3 text-sm outline-none placeholder:text-[#596a8e] focus:border-[#5b9af4] ${
+                  isDark
+                    ? "border-[#293352] bg-[#1d2540] text-white"
+                    : "border-[#d5deeb] bg-[#f4f7fb] text-[#182238]"
+                }`}
               />
 
               <button
-                onClick={() => processScan(scanCode)}
+                onClick={() =>
+                  processScan(scanCode)
+                }
                 className="flex items-center gap-2 rounded-[14px] bg-[#5799ff] px-5 py-3 text-sm font-medium text-white transition hover:bg-[#6aa6ff]"
               >
                 <QrCode size={17} />
                 Scan
               </button>
+
             </div>
+
           </div>
+
         </div>
       )}
 
@@ -863,28 +924,34 @@ function App() {
 
 /* ================= STAT CARD ================= */
 
-function StatCard({ value, label, valueColor }) {
+function StatCard({
+  value,
+  label,
+  valueColor,
+  isDark,
+}) {
   return (
     <div
-      className="
-        flex
-        h-[105px]
-        flex-col
-        items-center
-        justify-center
-        rounded-[20px]
-        border
-        border-[#202943]
-        bg-[#1b2139]
-        shadow-inner
-      "
+      className={`flex h-[105px] flex-col items-center justify-center rounded-[20px] border shadow-inner ${
+        isDark
+          ? "border-[#202943] bg-[#1b2139]"
+          : "border-[#dce3ef] bg-white"
+      }`}
     >
 
-      <span className={`text-[25px] font-normal ${valueColor}`}>
+      <span
+        className={`text-[25px] font-normal ${valueColor}`}
+      >
         {value}
       </span>
 
-      <span className="mt-2 text-[13px] text-[#5d6c91]">
+      <span
+        className={`mt-2 text-[13px] ${
+          isDark
+            ? "text-[#5d6c91]"
+            : "text-[#71809a]"
+        }`}
+      >
         {label}
       </span>
 
@@ -895,22 +962,37 @@ function StatCard({ value, label, valueColor }) {
 
 /* ================= INFO CARD ================= */
 
-function InfoCard({ title, value }) {
+function InfoCard({
+  title,
+  value,
+  isDark,
+}) {
   return (
     <div
-      className="
-        min-h-[78px]
-        rounded-[15px]
-        bg-[#181e35]
-        p-4
-      "
+      className={`min-h-[78px] rounded-[15px] p-4 ${
+        isDark
+          ? "bg-[#181e35]"
+          : "bg-[#f1f5fa]"
+      }`}
     >
 
-      <p className="text-[10px] text-[#59698d]">
+      <p
+        className={`text-[10px] ${
+          isDark
+            ? "text-[#59698d]"
+            : "text-[#71809a]"
+        }`}
+      >
         {title}
       </p>
 
-      <p className="mt-2 text-[17px] font-normal text-[#dce5ff]">
+      <p
+        className={`mt-2 text-[17px] font-normal ${
+          isDark
+            ? "text-[#dce5ff]"
+            : "text-[#27344e]"
+        }`}
+      >
         {value}
       </p>
 
@@ -921,33 +1003,42 @@ function InfoCard({ title, value }) {
 
 /* ================= EMPTY STATE ================= */
 
-function EmptyState({ icon, title, description }) {
+function EmptyState({
+  icon,
+  title,
+  description,
+  isDark,
+}) {
   return (
     <div
-      className="
-        mt-5
-        flex
-        min-h-[350px]
-        flex-col
-        items-center
-        justify-center
-        rounded-[24px]
-        border
-        border-[#222b48]
-        bg-[#1b2139]
-        text-center
-      "
+      className={`mt-5 flex min-h-[350px] flex-col items-center justify-center rounded-[24px] border text-center ${
+        isDark
+          ? "border-[#222b48] bg-[#1b2139]"
+          : "border-[#dce3ef] bg-white"
+      }`}
     >
 
       <div className="mb-4 text-[#5799ff]">
         {icon}
       </div>
 
-      <h2 className="text-lg font-medium text-white">
+      <h2
+        className={`text-lg font-medium ${
+          isDark
+            ? "text-white"
+            : "text-[#1c2942]"
+        }`}
+      >
         {title}
       </h2>
 
-      <p className="mt-2 text-sm text-[#667596]">
+      <p
+        className={`mt-2 text-sm ${
+          isDark
+            ? "text-[#667596]"
+            : "text-[#71809a]"
+        }`}
+      >
         {description}
       </p>
 
