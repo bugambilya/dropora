@@ -1,13 +1,10 @@
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import {
   Bell,
   Box,
-  ScanLine,
   Wifi,
   Lock,
   Unlock,
-  X,
-  QrCode,
   Sun,
   Moon,
 } from "lucide-react";
@@ -17,163 +14,9 @@ import "./App.css";
 function App() {
   const [activeTab, setActiveTab] = useState("Overview");
   const [isLocked, setIsLocked] = useState(true);
-  const [isScanOpen, setIsScanOpen] = useState(false);
-  const [scanCode, setScanCode] = useState("");
-  const [scanMessage, setScanMessage] = useState("");
   const [theme, setTheme] = useState("dark");
 
-  const streamRef = useRef(null);
-  const videoRef = useRef(null);
-
   const isDark = theme === "dark";
-
-  // ================= SCANNER =================
-
-  const stopScanner = () => {
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach((track) => track.stop());
-      streamRef.current = null;
-    }
-
-    if (videoRef.current) {
-      videoRef.current.srcObject = null;
-    }
-  };
-
-  const closeScanner = () => {
-    stopScanner();
-    setIsScanOpen(false);
-    setScanMessage("");
-  };
-
-  const processScan = (value) => {
-    const code = value.trim();
-
-    if (!code) {
-      setScanMessage("Please enter or scan a delivery code.");
-      return;
-    }
-
-    setScanCode(code);
-    setScanMessage(`Code scanned: ${code}`);
-
-    stopScanner();
-
-    // Successful scan unlocks Dropora
-    setIsLocked(false);
-  };
-
-  const startScanner = async () => {
-    setScanMessage("Starting camera...");
-
-    try {
-      stopScanner();
-
-      if (
-        !navigator.mediaDevices ||
-        !navigator.mediaDevices.getUserMedia
-      ) {
-        setScanMessage(
-          "Camera access is not supported by this browser."
-        );
-        return;
-      }
-
-      const stream =
-        await navigator.mediaDevices.getUserMedia({
-          video: {
-            facingMode: { ideal: "environment" },
-            width: { ideal: 1280 },
-            height: { ideal: 720 },
-          },
-          audio: false,
-        });
-
-      streamRef.current = stream;
-
-      if (!videoRef.current) {
-        stream.getTracks().forEach((track) => track.stop());
-        streamRef.current = null;
-        return;
-      }
-
-      videoRef.current.srcObject = stream;
-
-      await videoRef.current.play();
-
-      setScanMessage(
-        "Camera is ready. Point it at a QR code."
-      );
-
-      if ("BarcodeDetector" in window) {
-        const detector = new BarcodeDetector({
-          formats: ["qr_code"],
-        });
-
-        const scanFrame = async () => {
-          if (!streamRef.current || !videoRef.current) {
-            return;
-          }
-
-          try {
-            const barcodes =
-              await detector.detect(videoRef.current);
-
-            if (
-              barcodes.length > 0 &&
-              barcodes[0].rawValue
-            ) {
-              processScan(barcodes[0].rawValue);
-              return;
-            }
-          } catch (error) {
-            console.error("QR detection error:", error);
-          }
-
-          requestAnimationFrame(scanFrame);
-        };
-
-        requestAnimationFrame(scanFrame);
-      } else {
-        setScanMessage(
-          "Camera is working, but QR scanning is not supported in this browser. You can enter the code manually."
-        );
-      }
-    } catch (error) {
-      console.error("Camera error:", error);
-
-      if (error.name === "NotAllowedError") {
-        setScanMessage(
-          "Camera permission was denied. Please allow camera access."
-        );
-      } else if (error.name === "NotFoundError") {
-        setScanMessage(
-          "No camera was found on this device."
-        );
-      } else {
-        setScanMessage(
-          "Unable to access the camera. Please allow camera permission and try again."
-        );
-      }
-
-      stopScanner();
-    }
-  };
-
-  useEffect(() => {
-    if (!isScanOpen) return;
-
-    const timer = setTimeout(() => {
-      startScanner();
-    }, 150);
-
-    return () => {
-      clearTimeout(timer);
-      stopScanner();
-    };
-  }, [isScanOpen]);
-
-  // ================= RENDER =================
 
   return (
     <div className={`app ${isDark ? "dark" : "light"}`}>
@@ -188,14 +31,14 @@ function App() {
 
         <div className="header-controls">
 
-          {/* Online */}
+          {/* Online Status */}
 
           <div className="online-status">
             <Wifi size={16} />
             <span>Online</span>
           </div>
 
-          {/* Theme */}
+          {/* Theme Toggle */}
 
           <button
             onClick={() =>
@@ -219,14 +62,15 @@ function App() {
 
           <button className="icon-button notification-button">
             <Bell size={21} />
-
             <span className="notification-dot" />
           </button>
 
         </div>
+
       </header>
 
-      {/* ================= ACTION CARDS ================= */}
+
+      {/* ================= ACTION CARD ================= */}
 
       <section className="action-cards">
 
@@ -250,33 +94,8 @@ function App() {
 
         </button>
 
-        {/* Scan Delivery */}
-
-        <button
-          onClick={() => {
-            setIsScanOpen(true);
-            setScanMessage("");
-          }}
-          className="scan-card"
-        >
-
-          <div className="scan-icon">
-            <ScanLine size={28} strokeWidth={1.7} />
-          </div>
-
-          <div>
-            <p className="action-title">
-              Scan Delivery Code
-            </p>
-
-            <p className="action-description">
-              QR or manual entry
-            </p>
-          </div>
-
-        </button>
-
       </section>
+
 
       {/* ================= MAIN DASHBOARD ================= */}
 
@@ -301,6 +120,7 @@ function App() {
 
           </div>
 
+
           {/* Locker Device */}
 
           <div className="locker-device">
@@ -317,6 +137,7 @@ function App() {
 
             </div>
 
+
             {/* Single Compartment */}
 
             <div
@@ -330,6 +151,7 @@ function App() {
               {/* Pattern */}
 
               <div className="compartment-pattern" />
+
 
               {/* Top */}
 
@@ -354,6 +176,7 @@ function App() {
                 )}
 
               </div>
+
 
               {/* Center */}
 
@@ -380,10 +203,13 @@ function App() {
                       : "status-unlocked"
                   }`}
                 >
-                  {isLocked ? "Locked" : "Unlocked"}
+                  {isLocked
+                    ? "Locked"
+                    : "Unlocked"}
                 </span>
 
               </div>
+
 
               {/* Bottom */}
 
@@ -405,7 +231,8 @@ function App() {
 
             </div>
 
-            {/* Lock / Unlock */}
+
+            {/* Lock / Unlock Button */}
 
             <button
               onClick={() => setIsLocked(!isLocked)}
@@ -433,6 +260,7 @@ function App() {
           </div>
 
         </section>
+
 
         {/* ================= RIGHT CONTENT ================= */}
 
@@ -472,6 +300,7 @@ function App() {
 
           </div>
 
+
           {/* ================= OVERVIEW ================= */}
 
           {activeTab === "Overview" && (
@@ -496,15 +325,22 @@ function App() {
                 />
 
                 <StatCard
-                  value={isLocked ? "Locked" : "Open"}
+                  value={
+                    isLocked
+                      ? "Locked"
+                      : "Open"
+                  }
                   label="Locker Status"
                   valueColor={
-                    isLocked ? "green" : "blue"
+                    isLocked
+                      ? "green"
+                      : "blue"
                   }
                   isDark={isDark}
                 />
 
               </div>
+
 
               {/* Dropora Status */}
 
@@ -537,6 +373,7 @@ function App() {
                   </div>
 
                 </div>
+
 
                 {/* Package Information */}
 
@@ -573,6 +410,7 @@ function App() {
             </>
           )}
 
+
           {/* ================= PACKAGES ================= */}
 
           {activeTab === "Packages" && (
@@ -583,6 +421,7 @@ function App() {
               isDark={isDark}
             />
           )}
+
 
           {/* ================= NOTIFICATIONS ================= */}
 
@@ -598,123 +437,6 @@ function App() {
         </section>
 
       </main>
-
-      {/* ================= QR SCANNER ================= */}
-
-      {isScanOpen && (
-        <div className="scanner-overlay">
-
-          <div className="scanner-modal">
-
-            {/* Scanner Header */}
-
-            <div className="scanner-header">
-
-              <div>
-                <p className="scanner-small-title">
-                  DROPORA
-                </p>
-
-                <h2>
-                  Scan Delivery Code
-                </h2>
-              </div>
-
-              <button
-                onClick={closeScanner}
-                className="close-button"
-                aria-label="Close scanner"
-              >
-                <X size={19} />
-              </button>
-
-            </div>
-
-            {/* Camera */}
-
-            <div className="camera-container">
-
-              <video
-                ref={videoRef}
-                className="camera"
-                muted
-                playsInline
-              />
-
-              <div className="scanner-frame">
-                <div className="scanner-box" />
-              </div>
-
-              <div className="camera-instruction">
-                Point the camera at a QR code
-              </div>
-
-            </div>
-
-            {/* Scan Message */}
-
-            {scanMessage && (
-              <div className="scan-message">
-                {scanMessage}
-              </div>
-            )}
-
-            {/* Successful Code */}
-
-            {scanCode && (
-              <div className="successful-code">
-                Delivery code:{" "}
-                <span>
-                  {scanCode}
-                </span>
-              </div>
-            )}
-
-            {/* Divider */}
-
-            <div className="manual-divider">
-
-              <span />
-
-              OR ENTER CODE MANUALLY
-
-              <span />
-
-            </div>
-
-            {/* Manual Input */}
-
-            <div className="manual-input">
-
-              <input
-                value={scanCode}
-                onChange={(e) =>
-                  setScanCode(e.target.value)
-                }
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    processScan(scanCode);
-                  }
-                }}
-                placeholder="e.g. PKG-4821"
-              />
-
-              <button
-                onClick={() =>
-                  processScan(scanCode)
-                }
-                className="scan-button"
-              >
-                <QrCode size={17} />
-                Scan
-              </button>
-
-            </div>
-
-          </div>
-
-        </div>
-      )}
 
     </div>
   );
@@ -803,3 +525,4 @@ function EmptyState({
 
 
 export default App;
+
