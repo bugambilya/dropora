@@ -11,12 +11,51 @@ import {
 
 import "./App.css";
 
+/* ================= MOCK DATA =================
+   Replace this with data from your API. Each package
+   is either "waiting" (still in the compartment) or
+   "collected" (already picked up).
+*/
+
+const PACKAGES = [
+  {
+    id: "PKG-4821",
+    sender: "Apple Store",
+    arrived: "Today, 2:34 PM",
+    weight: "1.2 kg",
+    status: "waiting",
+  },
+  {
+    id: "PKG-4855",
+    sender: "Nike",
+    arrived: "Today, 4:10 PM",
+    weight: "0.8 kg",
+    status: "waiting",
+  },
+  {
+    id: "PKG-4790",
+    sender: "Amazon",
+    arrived: "Yesterday, 11:02 AM",
+    weight: "2.4 kg",
+    status: "collected",
+  },
+];
+
+
 function App() {
   const [activeTab, setActiveTab] = useState("Overview");
   const [isLocked, setIsLocked] = useState(true);
   const [theme, setTheme] = useState("dark");
 
   const isDark = theme === "dark";
+
+  const waitingPackages = PACKAGES.filter(
+    (pkg) => pkg.status === "waiting"
+  );
+
+  const collectedPackages = PACKAGES.filter(
+    (pkg) => pkg.status === "collected"
+  );
 
   return (
     <div className={`app ${isDark ? "dark" : "light"}`}>
@@ -288,6 +327,13 @@ function App() {
 
                 {item}
 
+                {item === "Packages" &&
+                  waitingPackages.length > 0 && (
+                    <span className="notification-count">
+                      {waitingPackages.length}
+                    </span>
+                  )}
+
                 {item === "Notifications" && (
                   <span className="notification-count">
                     2
@@ -311,14 +357,14 @@ function App() {
               <div className="stat-grid">
 
                 <StatCard
-                  value="1"
+                  value={waitingPackages.length}
                   label="Received"
                   valueColor="blue"
                   isDark={isDark}
                 />
 
                 <StatCard
-                  value="1"
+                  value={collectedPackages.length}
                   label="Collected"
                   valueColor="green"
                   isDark={isDark}
@@ -375,35 +421,56 @@ function App() {
                 </div>
 
 
-                {/* Package Information */}
+                {/* Compartment contents summary — scales to any
+                    number of packages instead of a single fixed one */}
 
-                <div className="info-grid">
+                {waitingPackages.length === 0 ? (
 
-                  <InfoCard
-                    title="PACKAGE ID"
-                    value="PKG-4821"
-                    isDark={isDark}
-                  />
+                  <p className="compartment-empty-note">
+                    No packages waiting for pickup.
+                  </p>
 
-                  <InfoCard
-                    title="SENDER"
-                    value="Apple Store"
-                    isDark={isDark}
-                  />
+                ) : (
 
-                  <InfoCard
-                    title="ARRIVED"
-                    value="Today, 2:34 PM"
-                    isDark={isDark}
-                  />
+                  <>
 
-                  <InfoCard
-                    title="WEIGHT"
-                    value="1.2 kg"
-                    isDark={isDark}
-                  />
+                    <p className="compartment-summary">
+                      <strong>{waitingPackages.length}</strong>{" "}
+                      package{waitingPackages.length > 1 ? "s" : ""}{" "}
+                      waiting for pickup
+                    </p>
 
-                </div>
+                    <div className="package-mini-list">
+
+                      {waitingPackages.map((pkg) => (
+
+                        <div
+                          className="package-mini-row"
+                          key={pkg.id}
+                        >
+
+                          <div>
+                            <p className="package-mini-id">
+                              {pkg.id}
+                            </p>
+                            <p className="package-mini-sender">
+                              {pkg.sender}
+                            </p>
+                          </div>
+
+                          <span className="package-mini-time">
+                            {pkg.arrived}
+                          </span>
+
+                        </div>
+
+                      ))}
+
+                    </div>
+
+                  </>
+
+                )}
 
               </div>
 
@@ -414,12 +481,64 @@ function App() {
           {/* ================= PACKAGES ================= */}
 
           {activeTab === "Packages" && (
-            <EmptyState
-              icon={<Box size={42} />}
-              title="Your Packages"
-              description="1 package is currently registered in Dropora."
-              isDark={isDark}
-            />
+
+            PACKAGES.length === 0 ? (
+
+              <EmptyState
+                icon={<Box size={42} />}
+                title="Your Packages"
+                description="You don't have any packages yet."
+                isDark={isDark}
+              />
+
+            ) : (
+
+              <div className="packages-panel">
+
+                {waitingPackages.length > 0 && (
+                  <section className="package-group">
+
+                    <h3 className="package-group-title">
+                      Waiting for pickup
+                    </h3>
+
+                    <div className="package-list">
+                      {waitingPackages.map((pkg) => (
+                        <PackageCard
+                          key={pkg.id}
+                          pkg={pkg}
+                          isDark={isDark}
+                        />
+                      ))}
+                    </div>
+
+                  </section>
+                )}
+
+                {collectedPackages.length > 0 && (
+                  <section className="package-group">
+
+                    <h3 className="package-group-title">
+                      Collected
+                    </h3>
+
+                    <div className="package-list">
+                      {collectedPackages.map((pkg) => (
+                        <PackageCard
+                          key={pkg.id}
+                          pkg={pkg}
+                          isDark={isDark}
+                        />
+                      ))}
+                    </div>
+
+                  </section>
+                )}
+
+              </div>
+
+            )
+
           )}
 
 
@@ -496,6 +615,67 @@ function InfoCard({
 }
 
 
+/* ================= PACKAGE CARD ================= */
+/* Full detail card for one package — used on the Packages tab.
+   Reuses the same status-card / info-grid look as the Overview card. */
+
+function PackageCard({ pkg, isDark }) {
+  const isCollected = pkg.status === "collected";
+
+  return (
+    <div
+      className={`package-card ${
+        isCollected ? "package-card-collected" : ""
+      }`}
+    >
+
+      <div className="status-header">
+
+        <h2>{pkg.id}</h2>
+
+        <span
+          className={`package-status-tag ${
+            isCollected ? "collected" : "waiting"
+          }`}
+        >
+          {isCollected ? "Collected" : "Waiting for pickup"}
+        </span>
+
+      </div>
+
+      <div className="info-grid">
+
+        <InfoCard
+          title="SENDER"
+          value={pkg.sender}
+          isDark={isDark}
+        />
+
+        <InfoCard
+          title="ARRIVED"
+          value={pkg.arrived}
+          isDark={isDark}
+        />
+
+        <InfoCard
+          title="WEIGHT"
+          value={pkg.weight}
+          isDark={isDark}
+        />
+
+        <InfoCard
+          title="STATUS"
+          value={isCollected ? "Picked Up" : "In Locker"}
+          isDark={isDark}
+        />
+
+      </div>
+
+    </div>
+  );
+}
+
+
 /* ================= EMPTY STATE ================= */
 
 function EmptyState({
@@ -525,4 +705,3 @@ function EmptyState({
 
 
 export default App;
-

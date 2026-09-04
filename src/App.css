@@ -1001,6 +1001,135 @@ button {
 
 
 /* ================================
+   COMPARTMENT SUMMARY (Overview)
+================================ */
+
+.compartment-summary {
+  margin: 20px 0 12px;
+
+  font-size: 14px;
+
+  color: var(--text);
+}
+
+.compartment-summary strong {
+  color: var(--green);
+  font-weight: 600;
+}
+
+.compartment-empty-note {
+  margin: 20px 0 0;
+
+  font-size: 14px;
+
+  color: var(--muted);
+}
+
+.package-mini-list {
+  display: flex;
+  flex-direction: column;
+
+  gap: 10px;
+}
+
+.package-mini-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 14px 16px;
+
+  border-radius: 15px;
+
+  background: var(--bg);
+
+  box-shadow:
+    inset 4px 4px 8px var(--dark-shadow),
+    inset -4px -4px 8px var(--light-shadow);
+}
+
+.package-mini-id {
+  margin: 0;
+
+  font-size: 14px;
+  font-weight: 500;
+
+  color: var(--text);
+}
+
+.package-mini-sender {
+  margin: 2px 0 0;
+
+  font-size: 12px;
+
+  color: var(--muted);
+}
+
+.package-mini-time {
+  margin-left: 12px;
+
+  font-size: 12px;
+  white-space: nowrap;
+
+  color: var(--muted);
+}
+
+
+/* ================================
+   PACKAGES TAB
+================================ */
+
+.package-group {
+  margin-top: 20px;
+}
+
+.package-group-title {
+  margin: 0 0 12px;
+
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+
+  color: var(--muted);
+}
+
+.package-list {
+  display: flex;
+  flex-direction: column;
+
+  gap: 16px;
+}
+
+.package-card {
+  padding: 24px;
+
+  border-radius: 24px;
+
+  background: var(--bg);
+
+  box-shadow:
+    10px 10px 20px var(--dark-shadow),
+    -10px -10px 20px var(--light-shadow);
+}
+
+.package-card-collected {
+  opacity: 0.65;
+}
+
+.package-status-tag {
+  font-size: 13px;
+}
+
+.package-status-tag.waiting {
+  color: var(--green);
+}
+
+.package-status-tag.collected {
+  color: var(--muted);
+}
+
+
+/* ================================
    RESPONSIVE
 ================================ */
 
