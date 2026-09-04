@@ -1,3 +1,4 @@
+
 * {
   box-sizing: border-box;
 }
@@ -33,41 +34,43 @@ button {
   min-height: 100vh;
   overflow-x: hidden;
   padding: 32px 20px;
+
   transition:
     background 0.3s ease,
     color 0.3s ease;
 }
 
 
-/* LIGHT NEUMORPHISM */
 
 .app.light {
-  background: #e0e5ec;
-  color: #27344e;
+  background: #e4eee8;
+  color: #294235;
 
-  --bg: #e0e5ec;
+  --bg: #e4eee8;
   --light-shadow: #ffffff;
-  --dark-shadow: #bec3c9;
-  --text: #27344e;
-  --muted: #71809a;
-  --blue: #5799ff;
-  --green: #35d985;
+  --dark-shadow: #bdc9c1;
+
+  --text: #294235;
+  --muted: #71847a;
+
+  --blue: #3fbd78;
+  --green: #35c979;
 }
 
 
-/* DARK NEUMORPHISM */
-
 .app.dark {
-  background: #171c2d;
-  color: #e0e6f5;
+  background: #14221c;
+  color: #e2f5ea;
 
-  --bg: #171c2d;
-  --light-shadow: #252c43;
-  --dark-shadow: #0d111c;
-  --text: #e0e6f5;
-  --muted: #7b88a9;
-  --blue: #5b9af4;
-  --green: #3fe18a;
+  --bg: #14221c;
+  --light-shadow: #20352b;
+  --dark-shadow: #0b1511;
+
+  --text: #e2f5ea;
+  --muted: #8ca99a;
+
+  --blue: #4fd18b;
+  --green: #4fe08f;
 }
 
 
@@ -121,12 +124,12 @@ button {
     -6px -6px 12px var(--light-shadow);
 }
 
-.dark .online-status {
-  color: #3ee18a;
-}
-
 .light .online-status {
   color: #22a968;
+}
+
+.dark .online-status {
+  color: #4fe08f;
 }
 
 
@@ -169,6 +172,11 @@ button {
     inset -4px -4px 8px var(--light-shadow);
 }
 
+
+/* ================================
+   THEME BUTTON
+================================ */
+
 .theme-button {
   color: #f7c75d;
 }
@@ -176,6 +184,15 @@ button {
 .light .theme-button {
   color: #52627f;
 }
+
+.dark .theme-button {
+  color: #4fe08f;
+}
+
+
+/* ================================
+   NOTIFICATION
+================================ */
 
 .notification-button {
   position: relative;
@@ -199,20 +216,23 @@ button {
 }
 
 
-/* ================================
+/* =========================================================
    ACTION CARDS
-================================ */
+========================================================= */
 
 .action-cards {
   display: grid;
   grid-template-columns: 1fr;
 
   gap: 20px;
+
   margin-top: 32px;
 }
 
 
-/* RECEIVE PACKAGE */
+/* ================================
+   RECEIVE CARD
+================================ */
 
 .receive-card {
   min-height: 110px;
@@ -227,10 +247,11 @@ button {
   text-align: left;
 
   color: white;
-  background: #5799ff;
+
+  background: #4fca86;
 
   box-shadow:
-    10px 10px 20px #aeb5c0,
+    10px 10px 20px #b7c2bb,
     -10px -10px 20px #ffffff;
 
   transition:
@@ -242,14 +263,6 @@ button {
   transform: translateY(-4px);
 }
 
-.dark .receive-card {
-  background: #426fae;
-
-  box-shadow:
-    10px 10px 20px #0c101b,
-    -10px -10px 20px #252e47;
-}
-
 .receive-card:active {
   box-shadow:
     inset 5px 5px 10px rgba(0, 0, 0, 0.18),
@@ -257,7 +270,22 @@ button {
 }
 
 
-/* ACTION ICON */
+/* ================================
+   DARK RECEIVE CARD
+================================ */
+
+.dark .receive-card {
+  background: #26734d;
+
+  box-shadow:
+    10px 10px 20px #0b1511,
+    -10px -10px 20px #20352b;
+}
+
+
+/* ================================
+   ACTION ICON
+================================ */
 
 .action-icon {
   width: 59px;
@@ -294,26 +322,27 @@ button {
 }
 
 .receive-card .action-description {
-  color: #d8e7ff;
+  color: #e0f7e9;
 }
 
 
-/* ================================
+/* =========================================================
    MAIN DASHBOARD
-================================ */
+========================================================= */
 
 .dashboard {
   display: grid;
   grid-template-columns: 1fr;
 
   gap: 28px;
+
   margin-top: 28px;
 }
 
 
-/* ================================
+/* =========================================================
    LOCKER SECTION
-================================ */
+========================================================= */
 
 .locker-section {
   padding: 28px;
@@ -342,6 +371,7 @@ button {
 
   font-size: 15px;
   font-weight: 500;
+
   letter-spacing: 0.04em;
 
   color: var(--muted);
@@ -354,6 +384,7 @@ button {
   gap: 8px;
 
   color: var(--green);
+
   font-size: 14px;
 }
 
@@ -371,9 +402,9 @@ button {
 }
 
 
-/* ================================
+/* =========================================================
    LOCKER DEVICE
-================================ */
+========================================================= */
 
 .locker-device {
   padding: 24px;
@@ -390,9 +421,9 @@ button {
 }
 
 
-/* ================================
+/* =========================================================
    DEVICE NAME
-================================ */
+========================================================= */
 
 .device-name {
   height: 39px;
@@ -402,6 +433,7 @@ button {
   justify-content: space-between;
 
   padding: 0 20px;
+
   margin-bottom: 20px;
 
   border-radius: 15px;
@@ -415,15 +447,16 @@ button {
 
 .device-name span:first-child {
   font-size: 13px;
+
   letter-spacing: 0.2em;
 
   color: var(--muted);
 }
 
 
-/* ================================
+/* =========================================================
    COMPARTMENT
-================================ */
+========================================================= */
 
 .compartment {
   position: relative;
@@ -446,7 +479,9 @@ button {
 }
 
 
-/* LOCKED */
+/* =========================================================
+   LOCKED COMPARTMENT
+========================================================= */
 
 .compartment-locked {
   background: #d9f0e3;
@@ -457,34 +492,38 @@ button {
 }
 
 .dark .compartment-locked {
-  background: #1c3b31;
+  background: #193b2b;
 
   box-shadow:
-    inset 6px 6px 12px #10231e,
-    inset -6px -6px 12px #284f41;
+    inset 6px 6px 12px #0d2118,
+    inset -6px -6px 12px #28543d;
 }
 
 
-/* UNLOCKED */
+/* =========================================================
+   UNLOCKED COMPARTMENT
+========================================================= */
 
 .compartment-unlocked {
-  background: #dceaff;
+  background: #d8f0e2;
 
   box-shadow:
-    inset 6px 6px 12px #b8c8df,
+    inset 6px 6px 12px #b9d3c4,
     inset -6px -6px 12px #ffffff;
 }
 
 .dark .compartment-unlocked {
-  background: #1d304d;
+  background: #1b3d2d;
 
   box-shadow:
-    inset 6px 6px 12px #111d30,
-    inset -6px -6px 12px #29435f;
+    inset 6px 6px 12px #0d2118,
+    inset -6px -6px 12px #2a5740;
 }
 
 
-/* PATTERN */
+/* =========================================================
+   COMPARTMENT PATTERN
+========================================================= */
 
 .compartment-pattern {
   position: absolute;
@@ -500,10 +539,26 @@ button {
       55deg,
       transparent,
       transparent 13px,
-      #7b8eb8 14px,
-      #7b8eb8 15px
+      #6f927e 14px,
+      #6f927e 15px
     );
 }
+
+.dark .compartment-pattern {
+  background:
+    repeating-linear-gradient(
+      55deg,
+      transparent,
+      transparent 13px,
+      #77c99b 14px,
+      #77c99b 15px
+    );
+}
+
+
+/* =========================================================
+   COMPARTMENT TOP / BOTTOM
+========================================================= */
 
 .compartment-top,
 .compartment-bottom {
@@ -517,37 +572,56 @@ button {
 .compartment-top span,
 .compartment-bottom span {
   font-size: 13px;
-  color: #71809a;
+
+  color: #71847a;
+}
+
+.dark .compartment-top span,
+.dark .compartment-bottom span {
+  color: #8ca99a;
 }
 
 .compartment-top span {
   letter-spacing: 0.15em;
 }
 
+
+/* =========================================================
+   LOCK ICONS
+========================================================= */
+
 .lock-green {
-  color: #35d985;
+  color: #35c979;
 
   filter:
-    drop-shadow(0 0 5px rgba(53, 217, 133, 0.4));
+    drop-shadow(0 0 5px rgba(53, 201, 121, 0.4));
 }
 
 .lock-blue {
-  color: #5b9af4;
+  color: #3fbd78;
 
   filter:
-    drop-shadow(0 0 5px rgba(91, 154, 244, 0.4));
+    drop-shadow(0 0 5px rgba(63, 189, 120, 0.4));
+}
+
+.dark .lock-blue {
+  color: #4fd18b;
+
+  filter:
+    drop-shadow(0 0 5px rgba(79, 209, 139, 0.5));
 }
 
 
-/* ================================
+/* =========================================================
    CENTER LOCK
-================================ */
+========================================================= */
 
 .compartment-center {
   position: relative;
 
   display: flex;
   flex-direction: column;
+
   align-items: center;
   justify-content: center;
 }
@@ -569,28 +643,44 @@ button {
     -5px -5px 10px rgba(255, 255, 255, 0.5);
 }
 
+
+/* ================================
+   GREEN LOCK CIRCLE
+================================ */
+
 .lock-circle-green {
   background: #d5efdf;
-  color: #35d985;
+
+  color: #35c979;
 }
 
 .dark .lock-circle-green {
-  background: #214738;
-}
+  background: #214b36;
 
-.lock-circle-blue {
-  background: #d7e6fc;
-  color: #5b9af4;
-}
-
-.dark .lock-circle-blue {
-  background: #243c5d;
+  color: #4fe08f;
 }
 
 
 /* ================================
-   STATUS PILL
+   UNLOCKED LOCK CIRCLE
 ================================ */
+
+.lock-circle-blue {
+  background: #d8f0e2;
+
+  color: #3fbd78;
+}
+
+.dark .lock-circle-blue {
+  background: #214b36;
+
+  color: #4fd18b;
+}
+
+
+/* =========================================================
+   STATUS PILL
+========================================================= */
 
 .status-pill {
   padding: 6px 16px;
@@ -604,30 +694,44 @@ button {
     inset -3px -3px 6px rgba(255, 255, 255, 0.4);
 }
 
+
+/* ================================
+   LOCKED STATUS
+================================ */
+
 .status-locked {
   background: #d5efdf;
+
   color: #28b96d;
 }
 
 .dark .status-locked {
-  background: #214738;
-  color: #3fe18a;
-}
+  background: #214b36;
 
-.status-unlocked {
-  background: #d7e6fc;
-  color: #4d8ce5;
-}
-
-.dark .status-unlocked {
-  background: #243c5d;
-  color: #5b9af4;
+  color: #4fe08f;
 }
 
 
 /* ================================
-   COMPARTMENT STATUS
+   UNLOCKED STATUS
 ================================ */
+
+.status-unlocked {
+  background: #d8f0e2;
+
+  color: #3ba96d;
+}
+
+.dark .status-unlocked {
+  background: #214b36;
+
+  color: #4fd18b;
+}
+
+
+/* =========================================================
+   COMPARTMENT STATUS DOT
+========================================================= */
 
 .compartment-status-dot {
   width: 13px;
@@ -636,6 +740,11 @@ button {
   border-radius: 50%;
 }
 
+
+/* ================================
+   GREEN STATUS DOT
+================================ */
+
 .status-dot-green {
   background: #42dd85;
 
@@ -643,17 +752,29 @@ button {
     0 0 14px rgba(66, 221, 133, 0.7);
 }
 
+
+/* ================================
+   SECOND STATUS DOT
+================================ */
+
 .status-dot-blue {
-  background: #5599f2;
+  background: #45c982;
 
   box-shadow:
-    0 0 14px rgba(85, 153, 242, 0.6);
+    0 0 14px rgba(69, 201, 130, 0.6);
+}
+
+.dark .status-dot-blue {
+  background: #4fd18b;
+
+  box-shadow:
+    0 0 14px rgba(79, 209, 139, 0.6);
 }
 
 
-/* ================================
+/* =========================================================
    LOCKER BUTTON
-================================ */
+========================================================= */
 
 .locker-button {
   width: 100%;
@@ -690,35 +811,53 @@ button {
     inset -5px -5px 10px var(--light-shadow);
 }
 
+
+/* =========================================================
+   UNLOCK BUTTON
+========================================================= */
+
 .unlock-button {
-  color: #5a9aff;
+  color: #3fbd78;
 
   box-shadow:
     6px 6px 12px var(--dark-shadow),
     -6px -6px 12px var(--light-shadow);
 }
+
+.dark .unlock-button {
+  color: #4fd18b;
+}
+
+
+/* =========================================================
+   LOCK BUTTON
+========================================================= */
 
 .lock-button {
-  color: #35d985;
+  color: #35c979;
 
   box-shadow:
     6px 6px 12px var(--dark-shadow),
     -6px -6px 12px var(--light-shadow);
 }
 
+.dark .lock-button {
+  color: #4fe08f;
+}
 
-/* ================================
+
+/* =========================================================
    RIGHT CONTENT
-================================ */
+========================================================= */
 
 .right-content {
   min-width: 0;
 }
 
 
-/* ================================
+/* =========================================================
    TABS
-================================ */
+========================================================= */
 
 .tabs {
   display: grid;
@@ -771,6 +910,11 @@ button {
     -4px -4px 8px var(--light-shadow);
 }
 
+
+/* =========================================================
+   NOTIFICATION COUNT
+========================================================= */
+
 .notification-count {
   display: inline-flex;
 
@@ -785,6 +929,7 @@ button {
   border-radius: 50%;
 
   background: #f28b36;
+
   color: white;
 
   font-size: 10px;
@@ -794,9 +939,9 @@ button {
 }
 
 
-/* ================================
+/* =========================================================
    STAT GRID
-================================ */
+========================================================= */
 
 .stat-grid {
   display: grid;
@@ -830,6 +975,7 @@ button {
 
 .stat-value {
   font-size: 25px;
+
   font-weight: 400;
 }
 
@@ -841,18 +987,31 @@ button {
   color: var(--muted);
 }
 
+
+/* =========================================================
+   STAT COLORS
+========================================================= */
+
 .blue-text {
-  color: #5799ff;
+  color: #3fbd78;
 }
 
 .green-text {
-  color: #3fdf86;
+  color: #35c979;
+}
+
+.dark .blue-text {
+  color: #4fd18b;
+}
+
+.dark .green-text {
+  color: #4fe08f;
 }
 
 
-/* ================================
+/* =========================================================
    STATUS CARD
-================================ */
+========================================================= */
 
 .status-card {
   margin-top: 20px;
@@ -883,6 +1042,7 @@ button {
   margin: 0;
 
   font-size: 17px;
+
   font-weight: 500;
 
   color: var(--text);
@@ -890,6 +1050,7 @@ button {
 
 .locker-status {
   display: flex;
+
   align-items: center;
 
   gap: 8px;
@@ -898,9 +1059,9 @@ button {
 }
 
 
-/* ================================
+/* =========================================================
    INFO GRID
-================================ */
+========================================================= */
 
 .info-grid {
   display: grid;
@@ -943,9 +1104,9 @@ button {
 }
 
 
-/* ================================
+/* =========================================================
    EMPTY STATE
-================================ */
+========================================================= */
 
 .empty-state {
   min-height: 350px;
@@ -976,16 +1137,21 @@ button {
 .empty-icon {
   margin-bottom: 16px;
 
-  color: #5799ff;
+  color: #3fbd78;
 
   filter:
     drop-shadow(2px 2px 4px var(--dark-shadow));
+}
+
+.dark .empty-icon {
+  color: #4fd18b;
 }
 
 .empty-state h2 {
   margin: 0;
 
   font-size: 18px;
+
   font-weight: 500;
 
   color: var(--text);
@@ -1000,9 +1166,9 @@ button {
 }
 
 
-/* ================================
-   COMPARTMENT SUMMARY (Overview)
-================================ */
+/* =========================================================
+   COMPARTMENT SUMMARY
+========================================================= */
 
 .compartment-summary {
   margin: 20px 0 12px;
@@ -1014,6 +1180,7 @@ button {
 
 .compartment-summary strong {
   color: var(--green);
+
   font-weight: 600;
 }
 
@@ -1025,8 +1192,14 @@ button {
   color: var(--muted);
 }
 
+
+/* =========================================================
+   PACKAGE MINI LIST
+========================================================= */
+
 .package-mini-list {
   display: flex;
+
   flex-direction: column;
 
   gap: 10px;
@@ -1034,6 +1207,7 @@ button {
 
 .package-mini-row {
   display: flex;
+
   align-items: center;
   justify-content: space-between;
 
@@ -1052,6 +1226,7 @@ button {
   margin: 0;
 
   font-size: 14px;
+
   font-weight: 500;
 
   color: var(--text);
@@ -1069,15 +1244,16 @@ button {
   margin-left: 12px;
 
   font-size: 12px;
+
   white-space: nowrap;
 
   color: var(--muted);
 }
 
 
-/* ================================
+/* =========================================================
    PACKAGES TAB
-================================ */
+========================================================= */
 
 .package-group {
   margin-top: 20px;
@@ -1087,7 +1263,9 @@ button {
   margin: 0 0 12px;
 
   font-size: 13px;
+
   font-weight: 500;
+
   letter-spacing: 0.04em;
 
   color: var(--muted);
@@ -1095,6 +1273,7 @@ button {
 
 .package-list {
   display: flex;
+
   flex-direction: column;
 
   gap: 16px;
@@ -1128,10 +1307,14 @@ button {
   color: var(--muted);
 }
 
+.dark .package-status-tag.waiting {
+  color: #4fe08f;
+}
 
-/* ================================
-   RESPONSIVE
-================================ */
+
+/* =========================================================
+   RESPONSIVE — TABLET
+========================================================= */
 
 @media (min-width: 768px) {
 
@@ -1142,11 +1325,15 @@ button {
 
   .header {
     flex-direction: row;
+
     align-items: flex-start;
   }
-
 }
 
+
+/* =========================================================
+   RESPONSIVE — DESKTOP
+========================================================= */
 
 @media (min-width: 1024px) {
 
@@ -1160,15 +1347,16 @@ button {
   }
 
   .dashboard {
-    grid-template-columns: 478px minmax(0, 1fr);
+    grid-template-columns:
+      478px
+      minmax(0, 1fr);
   }
-
 }
 
 
-/* ================================
+/* =========================================================
    SMALL SCREENS
-================================ */
+========================================================= */
 
 @media (max-width: 600px) {
 
@@ -1186,6 +1374,7 @@ button {
 
   .online-status {
     flex: 1;
+
     justify-content: center;
   }
 
@@ -1196,6 +1385,7 @@ button {
   .action-icon {
     width: 52px;
     height: 52px;
+
     margin-right: 14px;
   }
 
@@ -1233,7 +1423,7 @@ button {
 
   .status-header {
     align-items: flex-start;
+
     flex-direction: column;
   }
-
 }
