@@ -60,7 +60,10 @@ function App() {
 
           {/* Notifications */}
 
-          <button className="icon-button notification-button">
+          <button className="icon-button notification-button"
+           onClick={() => setActiveTab("Notifications")}
+           title="View Notifications"
+          >
             <Bell size={21} />
             <span className="notification-dot" />
           </button>
